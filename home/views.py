@@ -87,6 +87,9 @@ class SendRequest(APIView):
             from_user = request.user
             to_user = User.objects.get(id = user_id)
 
+            if from_user.friendship_requests_sent.filter(created_at__gt=timezone.now()-timezone.timedelta(minutes=1)).count() >= 3:
+                return Response({"error": "You can only send 3 friend requests per minute."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
             friendship, created = Friendship.objects.get_or_create(from_user=from_user,to_user=to_user,defaults={'status': 'pending'})
 
             if created:
